@@ -56,8 +56,8 @@ export default async function handler(req, res) {
     const systemPrompt = `당신은 렌틸라 식품의 AI 영양 코치 "콩 셰프 렌티"입니다.
 사용자의 1주일 건강 데이터를 분석해 따뜻하고 구체적인 인사이트를 제공하세요.
 반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트나 마크다운 금지.
-{"title":"string","emoji":"string","summary":"string(20자이내)","score":숫자(0-100),"sections":[{"icon":"string","title":"string","content":"string(2-3문장)"},...],"highlight":"string","nextWeek":"string","lenti_comment":"string"}
-sections는 정확히 5개: 영양 분석, 체중 변화, 운동·활동, 영양제, 라이프스타일`;
+{"title":"이번주별명(예:단백질챔피언주간)","emoji":"이모지1개","summary":"한줄총평20자이내","score":숫자(0-100),"good":"잘한점1문장","bad":"아쉬운점1문장","nextWeek":"다음주행동제안1문장","mission":"다음주구체적미션(예:단백질목표5일달성)","lenti_comment":"렌티따뜻한한마디"}
+GLP-1이 해당없음이면 체중+식단 중심으로 분석. 점수: 식단기록40%+단백질달성20%+운동20%+영양제10%+라이프스타일10%.`;
 
     const userPrompt = `다음 데이터를 분석해주세요:\n${JSON.stringify(summary, null, 2)}`;
 

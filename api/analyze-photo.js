@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { image, mealTime, lang, memo, myFoods } = req.body;
+    const { image, mealTime, lang, memo, myFoods, handSize } = req.body;
     if (!image) return res.status(400).json({ error: 'image is required' });
 
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
@@ -29,6 +29,16 @@ export default async function handler(req, res) {
     let memoHint = '';
     if (memo && typeof memo === 'string' && memo.trim()) {
       memoHint = `\n\n━━ 사용자 추가 설명 ━━\n"${memo.trim()}"\n이 설명을 사진 분석에 반영하세요. 설명이 사진과 다르면 설명을 우선합니다.\n`;
+    }
+
+    // 사용자 손바닥 실측 크기
+    let handSizeHint = '';
+    if (handSize && handSize.palmWidth && handSize.palmLength) {
+      handSizeHint = `\n\n━━ 사용자 손바닥 실측 크기 (정확함) ━━\n`
+        + `가로 폭: ${handSize.palmWidth}mm (새끼손가락~엄지 밑 관절)\n`
+        + `세로 길이: ${handSize.palmLength}mm (손목~중지 끝)\n`;
+      if (handSize.thumbLength) handSizeHint += `엄지 길이: ${handSize.thumbLength}mm\n`;
+      handSizeHint += `사진에 사용자의 손이 보이면 위 크기를 기준으로 다른 음식의 양을 정확히 비교·계산하세요. 손바닥과 음식 면적을 비교해 부피·무게 환산.\n`;
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -89,7 +99,7 @@ export default async function handler(req, res) {
 ━━ 기타 규칙 ━━
 - identified 배열에 수량 포함: ["족발 3조각", "막국수 1그릇"]
 - 수치만 제공, 평가나 진단 금지
-- 다른 텍스트 없이 JSON만 응답${myFoodsHint}${memoHint}
+- 다른 텍스트 없이 JSON만 응답${myFoodsHint}${memoHint}${handSizeHint}
 
 반드시 아래 JSON 형식으로만 응답:
 {"identified":["음식1(${responseLang})"],"foods":[{"name":"음식명(${responseLang})","quantity":1,"unit":"개","unitCal":0,"unitProtein":0,"unitCarbs":0,"unitFat":0,"unitSugar":0,"cal":0,"protein":0,"carbs":0,"fat":0,"sugar":0,"confidence":0.85,"warning":""}],"totals":{"cal":0,"protein":0,"carbs":0,"fat":0,"sugar":0}}`
